@@ -13,6 +13,7 @@
 template<typename T>
 class concurrent_queue
 {
+
 private:
 	struct node
 	{	
@@ -25,7 +26,7 @@ private:
 	std::mutex	m_tail_mtx;
 	node *m_tail_p;
 	std::condition_variable m_cv;
-    mutable boost::shared_mutex m_shared_mtx;
+	mutable boost::shared_mutex m_shared_mtx;
 
 	node* get_tail();
 	std::unique_ptr<node> locked_pop(); // must have head mtx
