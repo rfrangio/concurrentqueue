@@ -11,34 +11,35 @@
 #include <boost/thread/shared_mutex.hpp>
 
 template<typename T>
+struct NODE 
+{	
+	std::shared_ptr<T> data;
+	std::unique_ptr<NODE<T>> next_p;
+};
+
+template<typename T>
 class concurrent_queue
 {
 
 private:
-	struct node
-	{	
-		std::shared_ptr<T> data;
-		std::unique_ptr<node> next;
-	};
-
 	std::mutex m_head_mtx;
-	std::unique_ptr<node> m_head_p;
+	std::unique_ptr<NODE<T>> m_head_p;
 	std::mutex	m_tail_mtx;
-	node *m_tail_p;
+	NODE<T> *m_tail_p;
 	std::condition_variable m_cv;
 	mutable boost::shared_mutex m_shared_mtx;
 
-	node* get_tail();
-	std::unique_ptr<node> locked_pop(); // must have head mtx
+	NODE<T>* get_tail();
+	std::unique_ptr<NODE<T>> locked_pop(); // must have head mtx
 	std::unique_lock<std::mutex> wait();
-	std::unique_ptr<node> wait_pop();
-	std::unique_ptr<node> wait_pop(T& value);
-	std::unique_ptr<node> try_pop();
-	std::unique_ptr<node> try_pop(T& value);
+	std::unique_ptr<NODE<T>> wait_pop();
+	std::unique_ptr<NODE<T>> wait_pop(T& value);
+	std::unique_ptr<NODE<T>> try_pop();
+	std::unique_ptr<NODE<T>> try_pop(T& value);
 
 public:
 	concurrent_queue() :
-		m_head_p(new node), m_tail_p(m_head_p.get())
+		m_head_p(new NODE<T>), m_tail_p(m_head_p.get())
 	{}
 
 	concurrent_queue(const concurrent_queue& other) = delete;
