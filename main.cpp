@@ -7,25 +7,27 @@
 #include <boost/thread/shared_mutex.hpp>
 #include "concurrent_queue.cpp"
 
-concurrent_queue<int32_t> cq;
+concurrent_queue<uint64_t> cq;
 concurrent_queue<char> oq;
+const int production_bundle = 10000000;
 
 void queue_consumer()
 {
-	int32_t val = 0;
+	uint64_t val = 0;
 
 	while(true) {
 		cq.wait_and_pop(val);
-		//std::cout << "Got value " << val << " \n" << std::flush;
 	}
-	std::cout << "Last value pop'd " << val << " \n" << std::flush;
 }
 
 void queue_producer()
 {
-	for(int32_t i = 0; i < 10000000; i++) {
+	for(uint64_t i = 0; i < production_bundle; i++) {
 		cq.push(i);
 	}
+
+	std::cout << "thread id: " << std::this_thread::get_id() << 
+					" done pushing " << production_bundle << " objects. \n";
 	while(!cq.empty()) { 
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 	}
@@ -37,13 +39,19 @@ int main()
 	std::thread	*threads_array = new std::thread[hardware_threads];
 	char input;
 
+	for(int i = 0; i < hardware_threads; i++) {
+		threads_array[i] = std::move(std::thread(queue_consumer));
+	}
+
 	std::thread prod1(queue_producer);
 	std::thread prod2(queue_producer);
 	std::thread prod3(queue_producer);
 
-	for(int i = 0; i < hardware_threads; i++) {
-		threads_array[i] = std::move(std::thread(queue_consumer));
+	while(!cq.empty()) {
+		std::cout << "shared queue size " << cq.get_size() << std::endl;
+		std::this_thread::sleep_for(std::chrono::seconds(1));
 	}
+	std::cout << "shared queue size " << cq.get_size() << std::endl;
 
 	prod1.join();
 	prod2.join();

@@ -28,7 +28,7 @@ private:
 	NODE<T> *m_tail_p;
 	std::condition_variable m_cv;
 	mutable boost::shared_mutex m_shared_mtx;
-	uint32_t m_qsize = 0;
+	uint64_t m_qsize = 0;
 
 	NODE<T>* get_tail();
 	std::unique_ptr<NODE<T>> locked_pop(); // must have head mtx
@@ -46,6 +46,7 @@ public:
 	concurrent_queue(const concurrent_queue& other) = delete;
 	concurrent_queue& operator=(const concurrent_queue& other) = delete;
 
+	uint64_t get_size() { return m_qsize; }
 	void push(T new_value);
 	std::shared_ptr<T> wait_and_pop();
 	void wait_and_pop(T& value);

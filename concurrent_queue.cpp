@@ -14,6 +14,7 @@ std::unique_ptr<NODE<T>> concurrent_queue<T>::locked_pop()
 	std::unique_ptr<NODE<T>> old_head = std::move(m_head_p);
 
 	m_head_p = std::move(old_head->next_p);
+	m_qsize--;
 
 	return old_head;
 }
@@ -83,6 +84,7 @@ void concurrent_queue<T>::push(T new_value)
 	NODE<T>* const new_tail=new_node.get();
 	m_tail_p->next_p=std::move(new_node);
 	m_tail_p=new_tail;
+	m_qsize++;
 
 	m_cv.notify_one();
 }
