@@ -28,6 +28,7 @@ private:
 	NODE<T> *m_tail_p;
 	std::condition_variable m_cv;
 	mutable boost::shared_mutex m_shared_mtx;
+	uint32_t m_qsize = 0;
 
 	NODE<T>* get_tail();
 	std::unique_ptr<NODE<T>> locked_pop(); // must have head mtx

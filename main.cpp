@@ -5,10 +5,10 @@
 #include <thread>
 #include <chrono>
 #include <boost/thread/shared_mutex.hpp>
-#include "concurrent_queue.h"
+#include "concurrent_queue.cpp"
 
 concurrent_queue<int32_t> cq;
-concurrent_queue<int32_t> oq;
+concurrent_queue<char> oq;
 
 void queue_consumer()
 {

@@ -125,5 +125,5 @@ bool concurrent_queue<T>::empty()
 	return (m_head_p.get() == get_tail());
 }
 
-template class concurrent_queue<int32_t>;
+//template class concurrent_queue<int32_t>;
 
