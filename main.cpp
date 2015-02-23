@@ -35,19 +35,26 @@ int main()
 {
 	const int hardware_threads = std::thread::hardware_concurrency() * 2;
 	std::thread	*threads_array = new std::thread[hardware_threads];
+	char input;
 
 	std::thread prod1(queue_producer);
 	std::thread prod2(queue_producer);
 	std::thread prod3(queue_producer);
+
 	for(int i = 0; i < hardware_threads; i++) {
-		threads_array[i] = std::thread(queue_consumer);
+		threads_array[i] = std::move(std::thread(queue_consumer));
 	}
 
 	prod1.join();
 	prod2.join();
 	prod3.join();
+
+	std::cout << "Done.\n";
+	std::cin >> input;
+
 	for(int i = 0; i < hardware_threads; i++) {
 		threads_array[i].detach();
 	}
 
+	std::cout << "shared queue is empty: " << (cq.empty() ? "true" : "false") << " \n";
 }
