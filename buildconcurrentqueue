@@ -1,0 +1,2 @@
+clang -std=c++11 -stdlib=libc++ -lc++ -lboost_thread-mt -lboost_exception-mt -lboost_system-mt -pthread -I /opt/local/include -L /opt/local/lib -o cqueue concurrent_queue.cpp main.cpp
+
