@@ -7,6 +7,7 @@
 #include <boost/thread/shared_mutex.hpp>
 #include "concurrent_queue.cpp"
 
+
 concurrent_queue<uint64_t> cq;
 concurrent_queue<char> oq;
 const int production_bundle = 10000000;

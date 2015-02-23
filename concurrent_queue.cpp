@@ -89,6 +89,7 @@ void concurrent_queue<T>::push(T new_value)
 	m_cv.notify_one();
 }
 
+
 template<typename T>
 std::shared_ptr<T> concurrent_queue<T>::wait_and_pop()
 {

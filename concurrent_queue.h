@@ -47,6 +47,7 @@ public:
 	concurrent_queue(const concurrent_queue& other) = delete;
 	concurrent_queue& operator=(const concurrent_queue& other) = delete;
 
+
 	uint64_t get_size() { return m_qsize; }
 	void push(T new_value);
 	std::shared_ptr<T> wait_and_pop();
