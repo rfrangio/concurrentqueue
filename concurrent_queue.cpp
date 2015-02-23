@@ -79,10 +79,10 @@ void concurrent_queue<T>::push(T new_value)
 	std::unique_ptr<node> new_node(new node);
 	std::lock_guard<std::mutex> tail_lock(m_tail_mtx);
 
-    m_tail_p->data=new_data;
-    node* const new_tail=new_node.get();
-    m_tail_p->next=std::move(new_node);
-    m_tail_p=new_tail;
+	m_tail_p->data=new_data;
+	node* const new_tail=new_node.get();
+	m_tail_p->next=std::move(new_node);
+	m_tail_p=new_tail;
 
 	m_cv.notify_one();
 }
