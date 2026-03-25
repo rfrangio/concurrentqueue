@@ -1,23 +1,26 @@
-#define BOOST_ASIO_SEPARATE_COMPILATION
+#include <algorithm>
+#include <cstdint>
 #include <thread>
 #include <iostream>
-#include <mutex>
-#include <thread>
 #include <chrono>
-#include <boost/thread/shared_mutex.hpp>
-#include "concurrent_queue.cpp"
+#include <limits>
+#include <vector>
+#include "concurrent_queue.h"
 
 
 concurrent_queue<uint64_t> cq;
-concurrent_queue<char> oq;
 const int production_bundle = 10000000;
+constexpr uint64_t shutdown_value = std::numeric_limits<uint64_t>::max();
 
 void queue_consumer()
 {
 	uint64_t val = 0;
 
-	while(true) {
+	while (true) {
 		cq.wait_and_pop(val);
+		if (val == shutdown_value) {
+			return;
+		}
 	}
 }
 
@@ -36,33 +39,35 @@ void queue_producer()
 
 int main()
 {
-	const int hardware_threads = std::thread::hardware_concurrency() * 2;
-	std::thread	*threads_array = new std::thread[hardware_threads];
-	char input;
+	const unsigned int hardware_threads =
+		std::max(1u, std::thread::hardware_concurrency() * 2);
+	std::vector<std::thread> consumers;
+	consumers.reserve(hardware_threads);
 
-	for(int i = 0; i < hardware_threads; i++) {
-		threads_array[i] = std::move(std::thread(queue_consumer));
+	for (unsigned int i = 0; i < hardware_threads; i++) {
+		consumers.emplace_back(queue_consumer);
 	}
 
 	std::thread prod1(queue_producer);
 	std::thread prod2(queue_producer);
 	std::thread prod3(queue_producer);
 
-	while(!cq.empty()) {
-		std::cout << "shared queue size " << cq.get_size() << std::endl;
-		std::this_thread::sleep_for(std::chrono::seconds(1));
-	}
-	std::cout << "shared queue size " << cq.get_size() << std::endl;
-
 	prod1.join();
 	prod2.join();
 	prod3.join();
 
+	while (!cq.empty()) {
+		std::cout << "shared queue size " << cq.get_size() << std::endl;
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+	}
 	std::cout << "Done.\n";
-	std::cin >> input;
 
-	for(int i = 0; i < hardware_threads; i++) {
-		threads_array[i].detach();
+	for (unsigned int i = 0; i < hardware_threads; i++) {
+		cq.push(shutdown_value);
+	}
+
+	for (std::thread& consumer : consumers) {
+		consumer.join();
 	}
 
 	std::cout << "shared queue is empty: " << (cq.empty() ? "true" : "false") << " \n";
